@@ -18,7 +18,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
   JVM_BASE_URL        = "http://heroku-jdk.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
-  VIPS_VENDOR_URL     = "http://s3-eu-west-1.amazonaws.com/img.myeventphoto.eu/heroku/vips.gz"
+  VIPS_VENDOR_URL     = "http://s3-eu-west-1.amazonaws.com/img.myeventphoto.eu/heroku"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
@@ -79,7 +79,6 @@ class LanguagePack::Ruby < LanguagePack::Base
     setup_language_pack_environment
     setup_profiled
     allow_git do
-      install_libvips
       install_language_pack_gems
       build_bundler
       create_database_yml
@@ -208,8 +207,8 @@ private
     end
     ENV["GEM_HOME"] = slug_vendor_base
     ENV["PATH"]     = "#{ruby_install_binstub_path}:#{config_vars["PATH"]}"
-    ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
-    ENV["LD_LIBRARY_PATH"] = "vendor/vips/lib"
+    #ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
+    #ENV["LD_LIBRARY_PATH"] = "vendor/vips/lib"
   end
 
   # sets up the profile.d script for this buildpack
@@ -319,16 +318,6 @@ ERROR
     [BUNDLER_GEM_PATH]
   end
 
-  # libvips for ruby-vips gem
-  def install_libvips
-    topic("Installing libvips")
-    bin_dir = "vendor/vips"
-    FileUtils.mkdir_p bin_dir
-    Dir.chdir(bin_dir) do |dir|
-      run("curl #{VIPS_VENDOR_URL} -s -o - | tar xzf -")
-    end
-  end
-
   # installs vendored gems into the slug
   def install_language_pack_gems
     FileUtils.mkdir_p(slug_vendor_base)
@@ -378,6 +367,15 @@ ERROR
     end
   end
 
+  # install libvips into the LP to be referenced for psych compilation
+  # @param [String] tmpdir to store the libvips files
+  def install_libvips(dir)
+    FileUtils.mkdir_p dir
+    Dir.chdir(dir) do |dir|
+      run("curl #{VIPS_VENDOR_URL}/vips.gz -s -o - | tar xzf -")
+    end
+  end
+
   # remove `vendor/bundle` that comes from the git repo
   # in case there are native ext.
   # users should be using `bundle pack` instead.
@@ -423,16 +421,23 @@ ERROR
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
-        install_libyaml(libyaml_dir)
+	install_libyaml(libyaml_dir)
+
+	libvips_dir = "#{tmpdir}/vips"
+	install_libvips(libvips_dir)
 
         # need to setup compile environment for the psych gem
         yaml_include   = File.expand_path("#{libyaml_dir}/include")
         yaml_lib       = File.expand_path("#{libyaml_dir}/lib")
-        pwd            = run("pwd").chomp
+        
+	libvips_include = File.expand_path("#{libvips_dir}/include")
+	libvips_lib	= File.expand_path("#{libvips_dir}/lib")
+	
+	pwd            = run("pwd").chomp
         bundler_path   = "#{pwd}/#{slug_vendor_base}/gems/#{BUNDLER_GEM_PATH}/lib"
         # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
         # codon since it uses bundler.
-        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
+        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{libvips_include}:$CPATH CPPATH=#{yaml_include}:#{libvips_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{libvips_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
         env_vars      += " BUNDLER_LIB_PATH=#{bundler_path}" if ruby_version == "ruby-1.8.7"
 
         bundler_output << pipe("pkg-config --list-all | grep -i vips 2>&1")	
