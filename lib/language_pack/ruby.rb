@@ -18,6 +18,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
   JVM_BASE_URL        = "http://heroku-jdk.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
+  VIPS_VENDOR_URL     = "https://s3-eu-west-1.amazonaws.com/img.myeventphoto.eu/heroku/vips.gz"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
@@ -78,6 +79,7 @@ class LanguagePack::Ruby < LanguagePack::Base
     setup_language_pack_environment
     setup_profiled
     allow_git do
+      install_libvips
       install_language_pack_gems
       build_bundler
       create_database_yml
@@ -206,6 +208,7 @@ private
     end
     ENV["GEM_HOME"] = slug_vendor_base
     ENV["PATH"]     = "#{ruby_install_binstub_path}:#{config_vars["PATH"]}"
+    ENV["PKG_CONFIG_PATH"] = vendor/vips/lib/pkgconfig
   end
 
   # sets up the profile.d script for this buildpack
@@ -313,6 +316,16 @@ ERROR
   # @return [Array] resulting list of gems
   def gems
     [BUNDLER_GEM_PATH]
+  end
+
+  # libvips for ruby-vips gem
+  def install_libvips
+    topic("Installing libvips")
+    bin_dir = "vendor/vips"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(bin_dir) do |dir|
+      run("curl #{VIPS_VENDOR_URL} -s -o - | tar xzf -")
+    end
   end
 
   # installs vendored gems into the slug
