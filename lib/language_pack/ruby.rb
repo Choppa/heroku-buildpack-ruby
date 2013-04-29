@@ -370,10 +370,12 @@ ERROR
   # install libvips into the LP to be referenced for psych compilation
   # @param [String] tmpdir to store the libvips files
   def install_libvips(dir)
+    
     FileUtils.mkdir_p dir
     Dir.chdir(dir) do |dir|
       run("curl #{VIPS_VENDOR_URL}/vips.gz -s -o - | tar xzf -")
     end
+
   end
 
   # remove `vendor/bundle` that comes from the git repo
