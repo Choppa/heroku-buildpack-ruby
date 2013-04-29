@@ -18,7 +18,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
   JVM_BASE_URL        = "http://heroku-jdk.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
-  VIPS_VENDOR_URL     = "https://s3-eu-west-1.amazonaws.com/img.myeventphoto.eu/heroku/vips.gz"
+  VIPS_VENDOR_URL     = "http://s3-eu-west-1.amazonaws.com/img.myeventphoto.eu/heroku/vips.gz"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
@@ -209,6 +209,7 @@ private
     ENV["GEM_HOME"] = slug_vendor_base
     ENV["PATH"]     = "#{ruby_install_binstub_path}:#{config_vars["PATH"]}"
     ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
+    ENV["LD_LIBRARY_PATH"] = "vendor/vips/lib"
   end
 
   # sets up the profile.d script for this buildpack
