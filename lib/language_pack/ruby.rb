@@ -435,6 +435,7 @@ ERROR
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
         env_vars      += " BUNDLER_LIB_PATH=#{bundler_path}" if ruby_version == "ruby-1.8.7"
 
+        bundler_output << pipe("pkg-config --list-all | grep -i vips 2>&1")	
 	bundler_output << pipe("pkg-config --libs vips 2>&1")        
 
 	puts "Running: #{bundle_command}"
