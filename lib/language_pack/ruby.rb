@@ -208,7 +208,7 @@ private
     end
     ENV["GEM_HOME"] = slug_vendor_base
     ENV["PATH"]     = "#{ruby_install_binstub_path}:#{config_vars["PATH"]}"
-    ENV["PKG_CONFIG_PATH"] = vendor/vips/lib/pkgconfig
+    ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
   end
 
   # sets up the profile.d script for this buildpack
