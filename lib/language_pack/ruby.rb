@@ -207,8 +207,8 @@ private
     end
     ENV["GEM_HOME"] = slug_vendor_base
     ENV["PATH"]     = "#{ruby_install_binstub_path}:#{config_vars["PATH"]}"
-    #ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
-    #ENV["LD_LIBRARY_PATH"] = "vendor/vips/lib"
+    ENV["PKG_CONFIG_PATH"] = "vendor/vips/lib/pkgconfig"
+    ENV["LD_LIBRARY_PATH"] = "vendor/vips/lib"
   end
 
   # sets up the profile.d script for this buildpack
@@ -423,7 +423,7 @@ ERROR
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
 	install_libyaml(libyaml_dir)
 
-	libvips_dir = "#{tmpdir}/vips"
+	libvips_dir = "vendor/vips"
 	install_libvips(libvips_dir)
 
         # need to setup compile environment for the psych gem
@@ -439,9 +439,6 @@ ERROR
         # codon since it uses bundler.
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{libvips_include}:$CPATH CPPATH=#{yaml_include}:#{libvips_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{libvips_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\" PKG_CONFIG_PATH=\"#{libvips_lib}/pkgconfig\" LD_LIBRARY_PATH=\"#{libvips_lib}\""
         env_vars      += " BUNDLER_LIB_PATH=#{bundler_path}" if ruby_version == "ruby-1.8.7"
-
-        bundler_output << pipe("pkg-config --list-all | grep -i vips 2>&1")	
-	bundler_output << pipe("pkg-config --libs vips 2>&1")        
 
 	puts "Running: #{bundle_command}"
         bundler_output << pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
