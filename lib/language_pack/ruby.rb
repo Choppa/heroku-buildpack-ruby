@@ -439,7 +439,11 @@ ERROR
           puts "#{name}:#{value}"	
 	end
 
-	puts File.exist?('vendor/vips/lib/libvips.a')
+	if File.exist?('vendor/vips/lib/libvips.a')
+	  puts "Found VIPS"
+	else
+	  puts "Couldn't find VIPS"
+	end
 
 	puts "Running: #{bundle_command}"
         bundler_output << pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
