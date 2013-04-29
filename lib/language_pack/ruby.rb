@@ -437,7 +437,7 @@ ERROR
         bundler_path   = "#{pwd}/#{slug_vendor_base}/gems/#{BUNDLER_GEM_PATH}/lib"
         # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
         # codon since it uses bundler.
-        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{libvips_include}:$CPATH CPPATH=#{yaml_include}:#{libvips_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{libvips_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
+        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{libvips_include}:$CPATH CPPATH=#{yaml_include}:#{libvips_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{libvips_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\" PKG_CONFIG_PATH=\"#{libvips_lib}/pkgconfig\" LD_LIBRARY_PATH=\"#{libvips_lib}\""
         env_vars      += " BUNDLER_LIB_PATH=#{bundler_path}" if ruby_version == "ruby-1.8.7"
 
         bundler_output << pipe("pkg-config --list-all | grep -i vips 2>&1")	
